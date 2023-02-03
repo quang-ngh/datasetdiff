@@ -1,3 +1,4 @@
+#   Update 3/2/2023
 import torch
 from diffusers import StableDiffusionPipeline
 
