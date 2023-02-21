@@ -4,3 +4,7 @@ __pycache__\
 *.png
 *.mp4
 *.jpg
+*.xml
+
+#   Dataset
+/data
