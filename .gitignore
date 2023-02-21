@@ -5,6 +5,12 @@ __pycache__\
 *.mp4
 *.jpg
 *.xml
+*.pdf
 
 #   Dataset
-/data
+*./data
+*.txt
+
+#   Pretrained 
+*./pretrained
+*.tar
