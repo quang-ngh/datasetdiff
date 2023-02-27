@@ -11,12 +11,12 @@ def split_text_image(path, img_path, txt_path):
     with open (path, 'r') as reader:
         
         string = reader.readlines()
-
+    
+    for idx, item in enumerate(string[1:100]):
         
-    reader.close()
-    for idx, item in enumerate(string[1:]):
-
-        img_id, caption = item.split(',')
+        img_id, caption = item.split('.jpg,')
+        img_id += ".jpg"
+        
         with open(imgs_path + "image_ids_"+ str(idx + 1) + ".txt", 'w') as writer:
             writer.write(img_id.strip("\n"))
         writer.close()

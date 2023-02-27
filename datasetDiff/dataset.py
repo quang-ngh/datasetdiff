@@ -1,15 +1,15 @@
 import torch
 import torchvision
-from torch.utils.data import Dataset, DataLoader
-from setting import PathConfig
+from torch.utils.data import Dataset
+from setting import DataPathConfig
 from glob import glob
 import PIL
-path = PathConfig()
+path = DataPathConfig()
 
 
 class ImageCaptioningDataset(Dataset):
 
-    def __init__(self, **kwargs):
+    def __init__(self, transform, **kwargs):
         
         """
         Parameters:
@@ -34,108 +34,71 @@ class ImageCaptioningDataset(Dataset):
             
         """         
         
-        if not kwargs["modal"] in ["text", "image", "both"]:
-
-            if kwargs["modal"] is None:
-                self.modal = "both"
-            else:
-                raise ValueError("Modal argument must be text, image or both. But found {}".format(kwargs['modal']))
-        else:
-            self.modal = kwargs['modal']
         self._set_files()
         self.images = None
         self.texts = None
-        super(ImageCaptioningDataset, self).__init__(**kwargs)
+        super(ImageCaptioningDataset, self).__init__()
+        self._set_files()
 
-    def __len__(self):
-        return len(self.files)
-
-    def __getitem__(self, index):
-
-        image = None
-        text = None
-        if self.modal == "both":
-            image, text = self._load_data(index)
-        elif self.modal == "image":
-            image = self._load_data(index)
-        elif self.modal == "text":
-            text = self._load_data(index)
-        else:
-            raise ValueError("Modal must be one of the {}".format(["text", "image", "both"]))
-
-        return image, text
-
+        if transform is None:
+            self.transform = torchvision.transforms.Compose([
+                torchvision.transforms.Resize((200, 200)),
+                torchvision.transforms.ToTensor(),
+            ])
+    
     def get_text_files(self):
 
         file_path = path.CAPTIONS_PATH
-        files = [file for file in file_path.glob(".*txt")]
+        files = [filename for filename in file_path.glob("*.txt")]
         return files
     
     def get_images_idx_files(self):
 
         file_path = path.IMG_ID_PATH
-        paths = file_path.glob(".*jpg") + file_path.glob("*.png") + file_path.glob("*.jepg")
+        paths = file_path.glob("*.txt")
         img_paths = [img_path for img_path in paths]
         return img_paths
 
     def read_img_file(self, filename):
-        return self.toTensor(PIL.open(filename))
+        
+        dst_part = None                       # Real image path
+        with open(filename, "r") as f:
+            dst_part = f.readlines()[0].strip("\n\r")
+        f.close()
+        fpath = path.IMG_CAPTION / dst_part
+        return self.transform(PIL.Image.open(fpath))
     
     def _set_files(self):
         
-        #   Extract list of paths of files
-        if self.modal == "text":
-            self.files = self.get_text_files()
+        txts = self.get_text_files()
+        imgs = self.get_images_idx_files()
+        self.files = list(zip(txts, imgs))
 
-        #   Extract list of paths of files that contain the identity of 
-        #   each image (r.sp.to text description)
-        elif self.modal == "image":
-            self.files = self.get_images_idx_files()
-        
-        elif self.modal == "both":
-            txts = self.get_text_files()
-            imgs = self.get_images_files()
-            self.files = list(zip(txts, imgs))
-            
     def _load_data(self, index: int):
-        try: 
-            if self.modal == "text":               
-                """Return the string which is contained in the txt files.
-                    Names of the text files are in the same order.
-                """
-                if not isinstance(self.files[index], str):
-                    raise ValueError("Expect str type of content.")
-                
-                text  = ""
-                fpath = self.files[index]
-                with open(fpath, "r") as reader:
-                    text = reader.read()
-                reader.close()
-                return text
+        try:
+            image   = None
+            txt     =   None
+            tfpath, ifpath = self.files[index]
 
-            elif self.modal == "image":            
-                ifpath = self.files[index]
-                image = self.read_img_file(ifpath)
-                return image
-                            
-            elif self.modal == "both":
+            with open(tfpath, "r") as reader:
+                txt = reader.readlines()
+            reader.close()
+            txt     = txt[0].strip("\n")
+            image   = self.read_img_file(ifpath)
 
-                txt     =   None
-                tfpath, ifpath = self.files[index]
-
-                with open(tfpath, "r") as reader:
-                    txt = reader.readlines()
-                reader.close()
-                txt     = txt.strip("\n")
-                image   = self.read_img_file(ifpath)
-                return image, txt  
-
-            else: 
-                raise ValueError("Modal must be one of {}".format(["text", "image", "both"]))
+            return image, txt
         except Exception as e:
             print(e)
         
-class SegmentationDataset(AbstractDataset):
+    def __len__(self):
+        return len(self.files)
+
+    def __getitem__(self, index):
+        image, txt = self._load_data(index)
+        return image, txt
+
+class SegmentationDataset(Dataset):
     def __init__(self) -> None:
         super(SegmentationDataset, self).__init__()
         pass
+
