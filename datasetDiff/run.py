@@ -1,11 +1,14 @@
-from dataset import ImageCaptioningDataset
+from dataset import ImageCaptioningDataset, SegmentationDataset
 from torch.utils.data import DataLoader
 from setting import UtilsConfigPath
 from tqdm import tqdm 
 
 transform = None
-flickr8k = ImageCaptioningDataset(transform)
+flickr8k = ImageCaptioningDataset(transform, train = False)
 flickr8kLoader = DataLoader(flickr8k, 4, False)
+
+pascal_voc_2012 = SegmentationDataset(transform = None, train = False, setting = "test")
+pascal_voc_loader = DataLoader(pascal_voc_2012, 12, False)
 
 
 # def run_image_caption_VOC2012(captioner):
@@ -40,4 +43,7 @@ def run_attend_and_excite(pretrained, dataloader):
 
 if __name__ == "__main__":   
     
-    run_attend_and_excite(None, dataloader = flickr8kLoader)
+    
+    out = next(iter(pascal_voc_loader))
+    print(out)
+    #run_attend_and_excite(None, dataloader = flickr8kLoader)

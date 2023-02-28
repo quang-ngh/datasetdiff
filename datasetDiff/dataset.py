@@ -9,7 +9,7 @@ path = DataPathConfig()
 
 class ImageCaptioningDataset(Dataset):
 
-    def __init__(self, transform, **kwargs):
+    def __init__(self, transform, train, **kwargs):
         
         """
         Parameters:
@@ -46,7 +46,7 @@ class ImageCaptioningDataset(Dataset):
             ])
         else:
             self.transform = transform
-
+        self.train = train
     def get_text_files(self):
 
         file_path = path.CAPTIONS_PATH
@@ -108,9 +108,6 @@ class SegmentationDataset(Dataset):
         """
         super(SegmentationDataset, self).__init__()
         
-        
-
-        self._set_files()
         if transform is None:
             self.transform = torchvision.transforms.Compose([
                 torchvision.transforms.Resize((200, 200)),
@@ -133,28 +130,38 @@ class SegmentationDataset(Dataset):
         self.images = []                                            #   List of paths of original images
         self.instance_masks = []                                    #   List of paths of instance segmentation masks files
         self.train = train
+        self._set_files()
+
     def _set_files(self):
 
-        jpeg_path  = path.VOC2012_TRAIN / "JPEGImages" 
+
         
         if self.train :     
+            jpeg_path  = path.VOC2012_TRAIN / "JPEGImages" 
             segment_classes = path.VOC2012_TRAIN / "SegmentationClasses"
             instance_classes = path.VOC2012_TRAIN / "SegmentationObject"
 
             self.images = [filepath for filepath in jpeg_path.glob("*.jpg")]
             
-            if self.s
-            self.segment_classes = [filepath for filepath in segment_classes.glob("*.png")]
-            self.instance_masks = [filepath for filepath in instance_classes.glob("*.png")]
+            if  self.setting == "segmentation":
+                self.segment_classes = [filepath for filepath in segment_classes.glob("*.png")]
+            elif  self.setting == "instance":
+                self.instance_masks = [filepath for filepath in instance_classes.glob("*.png")]
+            else:
+                raise ValueError("Setting must be segmentation or ")
 
             if len(self.images) == 0 or len(self.segment_classes) == 0 or len(self.instance_masks):
                 raise ValueError("One of three dataset is empty (Images, Semantic, Instance)")
         else:
+            jpeg_path = path.VOC2012_TEST_IMG
+            print(jpeg_path)
             self.images = [filepath for filepath in jpeg_path.glob("*.jpg")]
-            raise ValueError ("There are no train images. Emtpy images list")
+            if len(self.images) == 0:
+                raise ValueError ("There are no train images. Emtpy images list")
+
 
     def __len__(self):
-        return len(self.files)
+        return len(self.images)
     
     def __getitem__(self, index):
         
@@ -163,11 +170,18 @@ class SegmentationDataset(Dataset):
             semantic    = None
             instance    = None
             
-            image = self.transform(PIL.Image.open(self.images[index]))
-            semantic = self.transform(PIL.Image.open(self.semantic_masks[index]))
-            instance = self.transform(PIL.Image.open(self.instance_masks[index]))
+            try:
+                image = self.transform(PIL.Image.open(self.images[index]))
+                semantic = self.transform(PIL.Image.open(self.semantic_masks[index]))
+                instance = self.transform(PIL.Image.open(self.instance_masks[index]))
+            except Exception as e:
+                print(e)
+                raise ValueError("Cannot open image or semantic or instace")
 
-            return image, semantic, in
+            return image, semantic, instance
+        else:
+            image   = self.transform(PIL.Image.open(self.images[index]))
+            return image
 
 
         

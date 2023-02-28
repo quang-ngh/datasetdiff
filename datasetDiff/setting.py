@@ -19,11 +19,12 @@ class DataPathConfig(PathConfig):
         self.IMG_ID_PATH = self.BASE_DIR / self.DATA_DIR / self.DATASET[0] / "images_id"
         self.IMG_CAPTION = self.BASE_DIR / self.DATA_DIR / self.DATASET[0] / "images"
 
-        self.VOC2012_TEST = self.BASE_DIR / self.DATA_DIR / self.DATASET[1] / "VOC2012_test" / "VOC20212_test"
+        self.VOC2012_TEST = self.BASE_DIR / self.DATA_DIR / self.DATASET[1] / "VOC2012_test" / "VOC2012_test"
         self.VOC2012_TRAIN = self.BASE_DIR / self.DATA_DIR / self.DATASET[1] / "VOC2012_train_val" / "VOC20212_train_val"
         self.VOC2012_TRAIN_IMG = self.VOC2012_TRAIN / "JPEGImages"
         self.VOC2012_TRAIN_SEMANTIC = self.VOC2012_TRAIN / "SegmentationObject"
         self.VOC2012_TRAIN_INSTANCE = self.VOC2012_TRAIN / "SegmentationClass"
+        self.VOC2012_TEST_IMG = self.VOC2012_TEST / "JPEGImages"
 #   Dataset evaluation
 
 class UtilsConfigPath(PathConfig):
