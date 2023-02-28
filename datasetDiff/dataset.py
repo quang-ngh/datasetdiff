@@ -34,7 +34,6 @@ class ImageCaptioningDataset(Dataset):
             
         """         
         
-        self._set_files()
         self.images = None
         self.texts = None
         super(ImageCaptioningDataset, self).__init__()
@@ -45,7 +44,9 @@ class ImageCaptioningDataset(Dataset):
                 torchvision.transforms.Resize((200, 200)),
                 torchvision.transforms.ToTensor(),
             ])
-    
+        else:
+            self.transform = transform
+
     def get_text_files(self):
 
         file_path = path.CAPTIONS_PATH
@@ -98,7 +99,75 @@ class ImageCaptioningDataset(Dataset):
         return image, txt
 
 class SegmentationDataset(Dataset):
-    def __init__(self) -> None:
+    def __init__(self, transform, train, *args, **kwargs) -> None:
+        """
+            transform : a compose of transformation that can be performed in
+                        the torch tensor.
+            setting:    semantic or instance segmentation
+            train:      if train then load the train_val folder. Otherwise, load test folder
+        """
         super(SegmentationDataset, self).__init__()
-        pass
+        
+        
 
+        self._set_files()
+        if transform is None:
+            self.transform = torchvision.transforms.Compose([
+                torchvision.transforms.Resize((200, 200)),
+                torchvision.transforms.ToTensor(),
+            ])
+        else:
+            self.transform = transform
+
+        if train:
+            if  kwargs['setting'] == 'semantic':
+                self.setting = 'semantic'
+            elif kwargs['setting'] == 'instance':
+                self.setting = 'instance'
+            else:
+                raise ValueError("Ambiguous setting. Segmentation should be semantic or instance. But found {}".format(kwargs['setting']))
+        else:
+            self.setting = None 
+
+        self.semantic_masks = []                                    #   List of paths of semantic masks files
+        self.images = []                                            #   List of paths of original images
+        self.instance_masks = []                                    #   List of paths of instance segmentation masks files
+        self.train = train
+    def _set_files(self):
+
+        jpeg_path  = path.VOC2012_TRAIN / "JPEGImages" 
+        
+        if self.train :     
+            segment_classes = path.VOC2012_TRAIN / "SegmentationClasses"
+            instance_classes = path.VOC2012_TRAIN / "SegmentationObject"
+
+            self.images = [filepath for filepath in jpeg_path.glob("*.jpg")]
+            
+            if self.s
+            self.segment_classes = [filepath for filepath in segment_classes.glob("*.png")]
+            self.instance_masks = [filepath for filepath in instance_classes.glob("*.png")]
+
+            if len(self.images) == 0 or len(self.segment_classes) == 0 or len(self.instance_masks):
+                raise ValueError("One of three dataset is empty (Images, Semantic, Instance)")
+        else:
+            self.images = [filepath for filepath in jpeg_path.glob("*.jpg")]
+            raise ValueError ("There are no train images. Emtpy images list")
+
+    def __len__(self):
+        return len(self.files)
+    
+    def __getitem__(self, index):
+        
+        if self.train:
+            image       = None
+            semantic    = None
+            instance    = None
+            
+            image = self.transform(PIL.Image.open(self.images[index]))
+            semantic = self.transform(PIL.Image.open(self.semantic_masks[index]))
+            instance = self.transform(PIL.Image.open(self.instance_masks[index]))
+
+            return image, semantic, in
+
+
+        
