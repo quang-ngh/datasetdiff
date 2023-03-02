@@ -11,9 +11,11 @@ def split_text_image(path, img_path, txt_path):
     with open (path, 'r') as reader:
         
         string = reader.readlines()
-    
-    for idx, item in enumerate(string[1:100]):
-        
+
+    reader.close()
+    print(string) 
+    for idx, item in enumerate(string[1:]):
+
         img_id, caption = item.split('.jpg,')
         img_id += ".jpg"
         
@@ -23,7 +25,8 @@ def split_text_image(path, img_path, txt_path):
 
         with open(txt_path + "caption_"+str(idx + 1) + '.txt', 'w') as writer:
             writer.write(caption.strip("\n"))
-        writer.close()
+    writer.close()
+
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
@@ -32,4 +35,4 @@ if __name__ == '__main__':
     parser.add_argument('--txt_path', type=str, default= "data/Flickr8K/captions/")
     args = parser.parse_args()
     
-    num_imgs, num_txt = split_text_image(args.file_path, args.img_path, args.txt_path)
+    split_text_image(args.file_path, args.img_path, args.txt_path)

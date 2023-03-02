@@ -38,7 +38,7 @@ class ImageCaptioningDataset(Dataset):
         self.texts = None
         super(ImageCaptioningDataset, self).__init__()
         self._set_files()
-
+        
         if transform is None:
             self.transform = torchvision.transforms.Compose([
                 torchvision.transforms.Resize((200, 200)),
@@ -49,7 +49,7 @@ class ImageCaptioningDataset(Dataset):
         self.train = train
     def get_text_files(self):
 
-        file_path = path.CAPTIONS_PATH
+        file_path = path.CAPTIONS_PATH 
         files = [filename for filename in file_path.glob("*.txt")]
         return files
     
@@ -58,6 +58,7 @@ class ImageCaptioningDataset(Dataset):
         file_path = path.IMG_ID_PATH
         paths = file_path.glob("*.txt")
         img_paths = [img_path for img_path in paths]
+        print(len(img_paths))
         return img_paths
 
     def read_img_file(self, filename):
