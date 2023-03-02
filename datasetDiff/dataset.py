@@ -97,6 +97,10 @@ class ImageCaptioningDataset(Dataset):
     def __getitem__(self, index):
         image, txt = self._load_data(index)
         return image, txt
+    
+    def __str__(self):
+        return str(path.IMG_CAPTION)
+
 
 class SegmentationDataset(Dataset):
     def __init__(self, transform, train, *args, **kwargs) -> None:
