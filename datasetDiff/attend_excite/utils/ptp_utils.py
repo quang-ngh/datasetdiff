@@ -3,7 +3,7 @@ import abc
 import cv2
 import numpy as np
 import torch
-from IPython.display import display
+# from IPython.display import display
 from PIL import Image
 from typing import Union, Tuple, List
 

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 @dataclass
 class RunConfig:
@@ -12,7 +13,7 @@ class RunConfig:
     # Which random seeds to use when generating
     seeds: List[int] = field(default_factory=lambda: [42])
     # Path to save all outputs to
-    output_path: Path = Path('./outputs')
+    output_path: Path = BASE_DIR / "save/flickr8k/"
     # Number of denoising steps
     n_inference_steps: int = 50
     # Text guidance scale
@@ -37,6 +38,8 @@ class RunConfig:
     kernel_size: int = 3
     # Whether to save cross attention maps for the final results
     save_cross_attention_maps: bool = False
-
+    
+    sent_list_indices: List[int] = None
+    
     def __post_init__(self):
         self.output_path.mkdir(exist_ok=True, parents=True)

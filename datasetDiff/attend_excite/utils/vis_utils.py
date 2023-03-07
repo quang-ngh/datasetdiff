@@ -5,8 +5,8 @@ import cv2
 import numpy as np
 import torch
 
-from utils import ptp_utils
-from utils.ptp_utils import AttentionStore, aggregate_attention
+from . import ptp_utils
+from .ptp_utils import AttentionStore, aggregate_attention
 
 
 def show_cross_attention(prompt: str,
@@ -32,7 +32,7 @@ def show_cross_attention(prompt: str,
             image = ptp_utils.text_under_image(image, decoder(int(tokens[i])))
             images.append(image)
 
-    ptp_utils.view_images(np.stack(images, axis=0))
+    pseudo_semantic = ptp_utils.view_images(np.stack(images, axis=0))
 
 
 def show_image_relevance(image_relevance, image: Image.Image, relevnace_res=16):
