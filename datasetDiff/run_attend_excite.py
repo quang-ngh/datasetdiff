@@ -96,7 +96,9 @@ def get_model():
     GUIDANCE_SCALE = 7.5
     MAX_NUM_WORDS = 77
     device = torch.device('cuda:1') if torch.cuda.is_available() else torch.device('cpu')
-    stable = AttendAndExcitePipeline.from_pretrained("CompVis/stable-diffusion-v1-4").to(device)
+    stable = AttendAndExcitePipeline.from_pretrained("CompVis/stable-diffusion-v1-4", torch_dtype = torch.float16).to(device)
+    # stable.enable_attention_slicing()
+
     tokenizer = stable.tokenizer
     print("Load model succesfully")
     return stable, tokenizer
