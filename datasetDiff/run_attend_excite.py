@@ -96,7 +96,7 @@ def get_model():
     GUIDANCE_SCALE = 7.5
     MAX_NUM_WORDS = 77
     device = torch.device('cuda:1') if torch.cuda.is_available() else torch.device('cpu')
-    stable = AttendAndExcitePipeline.from_pretrained("./stable-diffusion-v1-4").to(device)
+    stable = AttendAndExcitePipeline.from_pretrained("./stable-diffusion-v1-4", from_tf = True).to(device)
     tokenizer = stable.tokenizer
     print("Load model succesfully")
     return stable, tokenizer
@@ -104,9 +104,11 @@ def get_model():
 def get_dataset():
 
     print("Load dataset...")
-    image_caption_dataset = ImageCaptioningDataset(transform = None, train = "test")
+    image_caption_dataset = ImageCaptioningDataset(transform = None, train = "test", mode = "text")
+    print("Get {}".format(image_caption_dataset.mode))
     dataloader = DataLoader(image_caption_dataset, batch_size = 2)
-    _, text = next(iter(dataloader))
+    text = next(iter(dataloader))
+    print(text)
     sent_list_indices = get_indices(text)               # Get singular noun indices of each sentence in the batch
     assert len(text) == len(sent_list_indices), "Number of sentences must be equal to the number of indices list"
     print("Load dataset successfully")
@@ -118,6 +120,7 @@ def run(config: RunConfig):
     seeds = [123]
     stable_diff, tokenizer = get_model()
     ##  Running
+
     for seed in seeds:
     
         prompts = [string]
@@ -173,6 +176,6 @@ if __name__ == '__main__':
 
             run(config) 
             del config
-    
+
     # for idx, item in enumerate(sent_list_indices):
         # print("{} : {}".format(text[idx], sent_list_indices[idx]))

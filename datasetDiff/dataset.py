@@ -9,7 +9,7 @@ path = DataPathConfig()
 
 class ImageCaptioningDataset(Dataset):
 
-    def __init__(self, transform, train, **kwargs):
+    def __init__(self, transform, train, mode, **kwargs):
         
         """
         Parameters:
@@ -33,7 +33,7 @@ class ImageCaptioningDataset(Dataset):
                 dictionary (modal = both)
             
         """         
-        
+        self.mode = mode        
         self.images = None
         self.texts = None
         super(ImageCaptioningDataset, self).__init__()
@@ -82,13 +82,24 @@ class ImageCaptioningDataset(Dataset):
             txt     =   None
             tfpath, ifpath = self.files[index]
 
+            
             with open(tfpath, "r") as reader:
                 txt = reader.readlines()
             reader.close()
             txt     = txt[0].strip("\n")
-            image   = self.read_img_file(ifpath)
 
-            return image, txt
+            if self.mode == "text":
+                print(txt)
+                return txt
+            elif self.mode == "image":
+
+                image   = self.read_img_file(ifpath)
+                return image
+
+            elif self.mode == "both":
+                image = self.read_img_file(ifpath)
+                return image, text
+
         except Exception as e:
             print(e)
         
@@ -96,7 +107,14 @@ class ImageCaptioningDataset(Dataset):
         return len(self.files)
 
     def __getitem__(self, index):
-        image, txt = self._load_data(index)
+
+        if self.mode == "text":
+            txt = self._load_data(index)
+            print("__getitem__: {}".format(txt))
+            return txt
+        elif self.mode == "image":
+            image = self._load_data(index)
+            return image
         return image, txt
     
     def __str__(self):
